@@ -1,0 +1,60 @@
+enum RoleName {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReportStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Role {
+  id  Int @id @default(autoincrement())
+  name RoleName @unique
+
+  users User[]
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model User {
+  id  Int   @id @default(autoincrement())
+  email   String  @unique
+  username  String?  @unique
+  name  String?
+  passwordHash  String
+  status  UserStatus @default(ACTIVE)
+
+  roleId  Int
+  role  Role  @relation(fields: [roleId], references: [id])
+  
+  reports      Report[]
+
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  @@index([roleId])
+}
+
+model Report {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      ReportStatus @default(DRAFT)
+
+  createdBy   Int
+  creator     User         @relation(fields: [createdBy], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([createdBy])
+  @@index([status])
+}
