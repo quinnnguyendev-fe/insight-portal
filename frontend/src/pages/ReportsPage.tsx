@@ -7,8 +7,10 @@ import {
   deleteReport,
 } from "../features/reports/reports.api";
 import type { Report } from "../features/reports/reports.types";
-import { useNavigate } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ReportsToolbar } from "../components/ReportsToolbar";
+import { ReportsPagination } from "../components/ReportsPagination";
+import { ReportForm } from "../components/ReportForm";
 
 export function ReportsPage() {
   const { token, logout } = useAuth();
@@ -172,131 +174,65 @@ export function ReportsPage() {
         </ul>
       )}
 
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search reports..."
-          value={search}
-          onChange={(e) => {
-            const value = e.target.value;
-
-            setSearchParams((params) => {
-              const newParams = new URLSearchParams(params);
-              if (value) {
-                newParams.set("search", value);
-              } else {
-                newParams.delete("search");
-              }
-              newParams.set("page", "1"); // Reset to first page on search change
-              return newParams;
-            });
-          }}
-        />
-
-        <select
-          value={status ?? ""}
-          onChange={(e) => {
-            const value = e.target.value as
-              | "draft"
-              | "published"
-              | "archived"
-              | "";
-            setSearchParams((params) => {
-              const newParams = new URLSearchParams(params);
-              if (value) {
-                newParams.set("status", value);
-              } else {
-                newParams.delete("status");
-              }
-              newParams.set("page", "1");
-              return newParams;
-            });
-          }}
-        >
-          <option value="">All Status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
-        </select>
-
-        <button
-          type="button"
-          onClick={handleClearFilters}
-          disabled={!search && !status}
-        >
-          Clear
-        </button>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            type="button"
-            onClick={() =>
-              setSearchParams((params) => {
-                const newParams = new URLSearchParams(params);
-                newParams.set("page", String(Math.max(page - 1, 1)));
-                return newParams;
-              })
+      <ReportsToolbar
+        search={search}
+        status={status}
+        onSearchChange={(value) =>
+          setSearchParams((params) => {
+            if (value) {
+              params.set("search", value);
+            } else {
+              params.delete("search");
             }
-            disabled={page === 1}
-          >
-            Previous
-          </button>
 
-          <span>
-            Page {page} of {totalPages}
-          </span>
+            params.set("page", "1");
 
-          <button
-            type="button"
-            onClick={() =>
-              setSearchParams((params) => {
-                const newParams = new URLSearchParams(params);
-                newParams.set("page", String(Math.min(page + 1, totalPages)));
-                return newParams;
-              })
+            return params;
+          })
+        }
+        onStatusChange={(value) =>
+          setSearchParams((params) => {
+            if (value) {
+              params.set("status", value);
+            } else {
+              params.delete("status");
             }
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-        </div>
-      )}
 
-      <form onSubmit={handleSubmitReport}>
-        <div className="form-group">
-          <label htmlFor="title">Title:</label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
+            params.set("page", "1");
 
-        <div className="form-group">
-          <label htmlFor="description">Description:</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+            return params;
+          })
+        }
+        onClear={handleClearFilters}
+      />
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Saving..."
-            : editingReport
-              ? "Update Report"
-              : "Create Report"}
-        </button>
+      <ReportsPagination
+        page={page}
+        totalPages={totalPages}
+        onPrevious={() => {
+          setSearchParams((params) => {
+            params.set("page", String(Math.max(page - 1, 1)));
+            return params;
+          });
+        }}
+        onNext={() => {
+          setSearchParams((params) => {
+            params.set("page", String(Math.min(page + 1, totalPages)));
+            return params;
+          });
+        }}
+      />
 
-        <button type="button" onClick={handleLogout}>
-          Logout
-        </button>
-      </form>
+      <ReportForm
+        editingReport={editingReport}
+        title={title}
+        description={description}
+        isSubmitting={isSubmitting}
+        onTitleChange={setTitle}
+        onDescriptionChange={setDescription}
+        onSubmit={handleSubmitReport}
+        onLogout={handleLogout}
+      />
     </>
   );
 }
