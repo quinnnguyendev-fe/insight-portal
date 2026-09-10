@@ -2,14 +2,43 @@ import { apiFetch } from '../../services/api';
 import type {
   CreateReportData,
   Report,
-} from './reports.types';
+  ReportsResponse,
+} from "./reports.types";
 
-export function getReports(token: string): Promise<Report[]> {
-  return apiFetch<Report[]>('/reports', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+
+export interface ReportsParams {
+  search?: string;
+  status?: "draft" | "published" | "archived";
+  page?: number;
+  limit?: number;
+}
+
+export async function getReports(
+  params: ReportsParams = {},
+): Promise<ReportsResponse> {
+  const query = new URLSearchParams();
+
+  if (params.search) {
+    query.set("search", params.search);
+  }
+
+  if (params.status) {
+    query.set("status", params.status);
+  }
+
+  if (params.page) {
+    query.set("page", params.page.toString());
+  }
+
+  if (params.limit) {
+    query.set("limit", params.limit.toString());
+  }
+
+  const response = await apiFetch<ReportsResponse>(
+    `/reports?${query.toString()}`,
+  );
+
+  return response;
 }
 
 export function createReport(

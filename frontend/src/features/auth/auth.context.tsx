@@ -17,7 +17,7 @@ interface AuthContextValue {
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const TOKEN_KEY = "access_token";
+export const TOKEN_KEY = "access_token";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);

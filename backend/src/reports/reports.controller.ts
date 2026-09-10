@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -36,8 +37,20 @@ export class ReportsController {
   }
 
   @Get()
-  findAll(@Request() req: any) {
-    return this.reportsService.findAll(req.user.id);
+  findAll(
+    @Request() req: any,
+    @Query('search') search?: string,
+    @Query('status') status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.reportsService.findAll(
+      req.user.id, 
+      search, 
+      status,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+    );
   }
 
   @Get(':id')
