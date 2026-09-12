@@ -1,8 +1,7 @@
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { useAuth } from "../features/auth/auth.context";
 import {
   createReport,
-  getReports,
   updateReport,
   deleteReport,
 } from "../features/reports/reports.api";
@@ -11,6 +10,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ReportsToolbar } from "../components/ReportsToolbar";
 import { ReportsPagination } from "../components/ReportsPagination";
 import { ReportForm } from "../components/ReportForm";
+import { useReports } from "../features/reports/hooks/useReports";
 
 export function ReportsPage() {
   const { token, logout } = useAuth();
@@ -29,39 +29,21 @@ export function ReportsPage() {
   const pageParam = Number(searchParams.get("page") ?? "1");
   const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
-  const [reports, setReports] = useState<Report[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchReports() {
-      if (!token) return;
-
-      try {
-        // setIsLoading(true);
-        setError(null);
-
-        const response = await getReports({ search, status, page, limit: 5 });
-        setReports(response.data);
-        setTotalPages(response.meta.totalPages);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load reports");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchReports();
-  }, [token, search, status, page]);
+  const { reports, setReports, isLoading, error, setError, totalPages } =
+    useReports({
+      search,
+      status,
+      page,
+      limit: 5,
+    });
 
   if (isLoading) {
     return <p>Loading reports...</p>;
