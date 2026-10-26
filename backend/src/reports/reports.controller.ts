@@ -53,6 +53,11 @@ export class ReportsController {
     );
   }
 
+  @Get('stats')
+  getStats(@Request() req: any) {
+    return this.reportsService.getStats(req.user.id);
+  }
+
   @Get(':id')
   findOne(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
     return this.reportsService.findOne(req.user.id, id);

@@ -72,6 +72,20 @@ export class ReportsService {
     };
   }
 
+  async getStats(userId: number) {
+    const reports = await this.db.orm.public.Report.where({
+      createdBy: userId,
+    }).all();
+
+    return {
+      total: reports.length,
+      draft: reports.filter((report) => report.status === 'DRAFT').length,
+      published: reports.filter((report) => report.status === 'PUBLISHED')
+        .length,
+      archived: reports.filter((report) => report.status === 'ARCHIVED').length,
+    };
+  }
+
   async findOne(userId: number, reportId: number) {
     const report = await this.db.orm.public.Report.first({
       id: reportId,
